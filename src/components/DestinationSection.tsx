@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
-import Image from 'next/image';
 
 interface DestinationSectionProps {
   active: boolean;
@@ -11,23 +10,11 @@ interface DestinationSectionProps {
 }
 
 export default function DestinationSection({ active, onComplete }: DestinationSectionProps) {
-  const [destinationIndex, setDestinationIndex] = useState(0);
-  const [imageIndex, setImageIndex] = useState(0);
+  const [currentDestination, setCurrentDestination] = useState(0);
   const [ref, inView] = useInView({
     threshold: 0.3,
     triggerOnce: false,
   });
-
-  // 이미지 슬라이드 애니메이션
-  useEffect(() => {
-    if (active && inView) {
-      const interval = setInterval(() => {
-        const destination = destinations[destinationIndex];
-        setImageIndex((prev) => (prev < destination.images.length - 1 ? prev + 1 : 0));
-      }, 3000);
-      return () => clearInterval(interval);
-    }
-  }, [active, inView, destinationIndex]);
 
   const destinations = [
     {
@@ -112,12 +99,25 @@ export default function DestinationSection({ active, onComplete }: DestinationSe
     }
   ];
 
-  const currentDestination = destinations[destinationIndex];
+  // 자동 슬라이드 효과
+  useEffect(() => {
+    if (active && inView) {
+      const interval = setInterval(() => {
+        setCurrentDestination((prev) => {
+          const nextIndex = (prev + 1) % destinations.length;
+          return nextIndex;
+        });
+      }, 5000);
+      
+      return () => clearInterval(interval);
+    }
+  }, [active, inView, destinations]);
+
+  const currentDestinationData = destinations[currentDestination];
 
   const nextDestination = () => {
-    if (destinationIndex < destinations.length - 1) {
-      setDestinationIndex(destinationIndex + 1);
-      setImageIndex(0);
+    if (currentDestination < destinations.length - 1) {
+      setCurrentDestination(currentDestination + 1);
     } else {
       onComplete();
     }
@@ -157,27 +157,27 @@ export default function DestinationSection({ active, onComplete }: DestinationSe
           transition={{ duration: 0.5, delay: 0.2 }}
         >
           <div className="flex items-center mb-4">
-            <span className="text-4xl mr-3">{currentDestination.icon}</span>
-            <h3 className="text-2xl font-semibold text-blue-800 font-mono tracking-wide">{currentDestination.title}</h3>
+            <span className="text-4xl mr-3">{currentDestinationData.icon}</span>
+            <h3 className="text-2xl font-semibold text-blue-800 font-mono tracking-wide">{currentDestinationData.title}</h3>
           </div>
-          <p className="text-lg text-blue-900 mb-4">{currentDestination.description}</p>
+          <p className="text-lg text-blue-900 mb-4">{currentDestinationData.description}</p>
           
           <div className="flex flex-wrap gap-2 mb-4">
             <span className="px-3 py-1 bg-blue-100 rounded-full text-blue-800 text-sm">
-              최적 방문 시기: {currentDestination.bestTimeToVisit}
+              최적 방문 시기: {currentDestinationData.bestTimeToVisit}
             </span>
             <span className="px-3 py-1 bg-blue-100 rounded-full text-blue-800 text-sm">
-              추천 일정: {currentDestination.recommendedDays}
+              추천 일정: {currentDestinationData.recommendedDays}
             </span>
             <span className="px-3 py-1 bg-blue-100 rounded-full text-blue-800 text-sm">
-              여행 스타일: {currentDestination.travelStyle}
+              여행 스타일: {currentDestinationData.travelStyle}
             </span>
           </div>
           
           <div className="mb-6">
             <h4 className="font-semibold text-blue-800 mb-2">주요 볼거리</h4>
             <ul className="space-y-2">
-              {currentDestination.highlights.map((highlight, idx) => (
+              {currentDestinationData.highlights.map((highlight, idx) => (
                 <li key={idx} className="flex items-start">
                   <span className="text-blue-500 mr-2">•</span>
                   <span>{highlight}</span>
@@ -189,7 +189,7 @@ export default function DestinationSection({ active, onComplete }: DestinationSe
           <div className="mb-6">
             <h4 className="font-semibold text-blue-800 mb-2">위치</h4>
             <div className="bg-blue-50 p-2 rounded-md text-blue-800">
-              <span className="font-mono">{currentDestination.mapLocation}</span>
+              <span className="font-mono">{currentDestinationData.mapLocation}</span>
             </div>
           </div>
           
@@ -197,7 +197,7 @@ export default function DestinationSection({ active, onComplete }: DestinationSe
             onClick={nextDestination}
             className="px-6 py-3 bg-blue-600 rounded-lg hover:bg-blue-500 transition text-white font-bold font-mono tracking-wide transform hover:scale-105"
           >
-            {destinationIndex < destinations.length - 1 ? "다음 목적지" : "여행 경험 보기"}
+            {currentDestination < destinations.length - 1 ? "다음 목적지" : "여행 경험 보기"}
           </button>
         </motion.div>
         
@@ -216,7 +216,7 @@ export default function DestinationSection({ active, onComplete }: DestinationSe
               <div 
                 className="w-full h-full flex items-center justify-center transition-opacity duration-1000"
                 style={{ 
-                  backgroundImage: `url(${currentDestination.images[imageIndex]})`,
+                  backgroundImage: `url(${currentDestinationData.images[0]})`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center'
                 }}
@@ -224,11 +224,11 @@ export default function DestinationSection({ active, onComplete }: DestinationSe
               
               {/* 이미지 인디케이터 */}
               <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
-                {currentDestination.images.map((_, idx) => (
+                {currentDestinationData.images.map((_, idx) => (
                   <button 
                     key={idx}
-                    onClick={() => setImageIndex(idx)}
-                    className={`w-3 h-3 rounded-full ${idx === imageIndex ? 'bg-white' : 'bg-white/50'}`}
+                    onClick={() => setCurrentDestination(idx)}
+                    className={`w-3 h-3 rounded-full ${idx === currentDestination ? 'bg-white' : 'bg-white/50'}`}
                     aria-label={`이미지 ${idx + 1}`}
                   ></button>
                 ))}
@@ -239,10 +239,10 @@ export default function DestinationSection({ active, onComplete }: DestinationSe
             <div className="mt-4 bg-white/80 p-4 rounded-lg shadow-md">
               <h4 className="font-semibold text-blue-800 mb-2">여행 팁</h4>
               <p className="text-blue-900">
-                {destinationIndex === 0 && "발리에서는 사원 방문 시 사롱(전통 천)을 착용해야 합니다. 대부분의 사원에서 대여 가능합니다."}
-                {destinationIndex === 1 && "교토의 인기 명소는 아침 일찍 방문하는 것이 좋습니다. 특히 아라시야마 대나무 숲은 해 뜨는 시간에 방문하세요."}
-                {destinationIndex === 2 && "산토리니에서는 이아(Oia)의 일몰을 놓치지 마세요. 좋은 자리를 잡으려면 최소 1시간 전에 도착하는 것이 좋습니다."}
-                {destinationIndex === 3 && "마추픽추 방문은 사전 예약이 필수입니다. 입장 티켓은 몇 달 전부터 매진되는 경우가 많으니 미리 계획하세요."}
+                {currentDestination === 0 && "발리에서는 사원 방문 시 사롱(전통 천)을 착용해야 합니다. 대부분의 사원에서 대여 가능합니다."}
+                {currentDestination === 1 && "교토의 인기 명소는 아침 일찍 방문하는 것이 좋습니다. 특히 아라시야마 대나무 숲은 해 뜨는 시간에 방문하세요."}
+                {currentDestination === 2 && "산토리니에서는 이아(Oia)의 일몰을 놓치지 마세요. 좋은 자리를 잡으려면 최소 1시간 전에 도착하는 것이 좋습니다."}
+                {currentDestination === 3 && "마추픽추 방문은 사전 예약이 필수입니다. 입장 티켓은 몇 달 전부터 매진되는 경우가 많으니 미리 계획하세요."}
               </p>
             </div>
           </div>
@@ -255,10 +255,9 @@ export default function DestinationSection({ active, onComplete }: DestinationSe
           <button 
             key={index}
             onClick={() => {
-              setDestinationIndex(index);
-              setImageIndex(0);
+              setCurrentDestination(index);
             }}
-            className={`w-3 h-3 rounded-full ${index === destinationIndex ? 'bg-blue-600' : 'bg-blue-300'}`}
+            className={`w-3 h-3 rounded-full ${index === currentDestination ? 'bg-blue-600' : 'bg-blue-300'}`}
             aria-label={`목적지 ${index + 1}로 이동`}
           ></button>
         ))}

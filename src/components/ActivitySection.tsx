@@ -10,23 +10,11 @@ interface ActivitySectionProps {
 }
 
 export default function ActivitySection({ active, onComplete }: ActivitySectionProps) {
-  const [activityIndex, setActivityIndex] = useState(0);
-  const [imageIndex, setImageIndex] = useState(0);
+  const [currentActivity, setCurrentActivity] = useState(0);
   const [ref, inView] = useInView({
     threshold: 0.3,
     triggerOnce: false,
   });
-
-  // 이미지 슬라이드 애니메이션
-  useEffect(() => {
-    if (active && inView) {
-      const interval = setInterval(() => {
-        const activity = activities[activityIndex];
-        setImageIndex((prev) => (prev < activity.images.length - 1 ? prev + 1 : 0));
-      }, 3000);
-      return () => clearInterval(interval);
-    }
-  }, [active, inView, activityIndex]);
 
   const activities = [
     {
@@ -83,12 +71,25 @@ export default function ActivitySection({ active, onComplete }: ActivitySectionP
     }
   ];
 
-  const currentActivity = activities[activityIndex];
+  // 자동 슬라이드 효과
+  useEffect(() => {
+    if (active && inView) {
+      const interval = setInterval(() => {
+        setCurrentActivity((prev) => {
+          const nextIndex = (prev + 1) % activities.length;
+          return nextIndex;
+        });
+      }, 5000);
+      
+      return () => clearInterval(interval);
+    }
+  }, [active, inView, activities]);
+
+  const currentActivityData = activities[currentActivity];
 
   const nextActivity = () => {
-    if (activityIndex < activities.length - 1) {
-      setActivityIndex(activityIndex + 1);
-      setImageIndex(0);
+    if (currentActivity < activities.length - 1) {
+      setCurrentActivity(currentActivity + 1);
     } else {
       onComplete();
     }
@@ -124,31 +125,31 @@ export default function ActivitySection({ active, onComplete }: ActivitySectionP
           transition={{ duration: 0.5, delay: 0.2 }}
         >
           <div className="flex items-center mb-4">
-            <span className="text-4xl mr-3">{currentActivity.icon}</span>
-            <h3 className="text-2xl font-semibold text-teal-800 font-mono tracking-wide">{currentActivity.title}</h3>
+            <span className="text-4xl mr-3">{currentActivityData.icon}</span>
+            <h3 className="text-2xl font-semibold text-teal-800 font-mono tracking-wide">{currentActivityData.title}</h3>
           </div>
           
-          <p className="text-lg text-teal-900 mb-6">{currentActivity.description}</p>
+          <p className="text-lg text-teal-900 mb-6">{currentActivityData.description}</p>
           
           <div className="flex flex-wrap gap-2 mb-6">
             <span className="px-3 py-1 bg-teal-100 rounded-full text-teal-800 text-sm">
-              난이도: {currentActivity.difficulty}
+              난이도: {currentActivityData.difficulty}
             </span>
             <span className="px-3 py-1 bg-teal-100 rounded-full text-teal-800 text-sm">
-              소요 시간: {currentActivity.duration}
+              소요 시간: {currentActivityData.duration}
             </span>
           </div>
           
           <div className="mb-6">
             <h4 className="text-lg font-semibold text-teal-800 mb-2">추천 장소</h4>
-            <p className="text-teal-900">{currentActivity.bestLocations}</p>
+            <p className="text-teal-900">{currentActivityData.bestLocations}</p>
           </div>
           
           <button 
             onClick={nextActivity}
             className="px-6 py-3 bg-teal-600 rounded-lg hover:bg-teal-500 transition text-white font-bold font-mono tracking-wide transform hover:scale-105"
           >
-            {activityIndex < activities.length - 1 ? "다음 액티비티" : "여행 계획하기"}
+            {currentActivity < activities.length - 1 ? "다음 액티비티" : "여행 계획하기"}
           </button>
         </motion.div>
         
@@ -167,7 +168,7 @@ export default function ActivitySection({ active, onComplete }: ActivitySectionP
               <div 
                 className="w-full h-full transition-opacity duration-1000"
                 style={{ 
-                  backgroundImage: `url(${currentActivity.images[imageIndex]})`,
+                  backgroundImage: `url(${currentActivityData.images[0]})`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center'
                 }}
@@ -175,11 +176,11 @@ export default function ActivitySection({ active, onComplete }: ActivitySectionP
               
               {/* 이미지 인디케이터 */}
               <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
-                {currentActivity.images.map((_, idx) => (
+                {currentActivityData.images.map((_, idx) => (
                   <button 
                     key={idx}
-                    onClick={() => setImageIndex(idx)}
-                    className={`w-3 h-3 rounded-full ${idx === imageIndex ? 'bg-white' : 'bg-white/50'}`}
+                    onClick={() => setCurrentActivity(idx)}
+                    className={`w-3 h-3 rounded-full ${idx === currentActivity ? 'bg-white' : 'bg-white/50'}`}
                     aria-label={`이미지 ${idx + 1}`}
                   ></button>
                 ))}
@@ -194,12 +195,9 @@ export default function ActivitySection({ active, onComplete }: ActivitySectionP
         {activities.map((_, index) => (
           <button 
             key={index}
-            onClick={() => {
-              setActivityIndex(index);
-              setImageIndex(0);
-            }}
+            onClick={() => setCurrentActivity(index)}
             className={`w-3 h-3 rounded-full transition-all ${
-              index === activityIndex ? 'bg-teal-600 scale-125' : 'bg-teal-300'
+              index === currentActivity ? 'bg-teal-600 scale-125' : 'bg-teal-300'
             }`}
             aria-label={`액티비티 ${index + 1}로 이동`}
           ></button>

@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
 import Providers from '@/components/Providers';
 import TravelIntroSection from '@/components/TravelIntroSection';
 import ExperienceSection from '@/components/ExperienceSection';
@@ -36,7 +35,7 @@ export default function Home() {
     
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [sectionRefs.length]);
   
   // 섹션 전환 함수
   const navigateToSection = (index: number) => {

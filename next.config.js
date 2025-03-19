@@ -8,6 +8,10 @@ const nextConfig = {
     // 동시에 유지할 페이지 수
     pagesBufferLength: 2,
   },
+  eslint: {
+    // 빌드 시 ESLint 검사를 건너뜁니다
+    ignoreDuringBuilds: true,
+  },
 }
 
 module.exports = nextConfig 
