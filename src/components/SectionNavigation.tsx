@@ -23,10 +23,14 @@ export default function SectionNavigation({ currentSection }: SectionNavigationP
     if (completedSections.has(section) || section === currentSection) {
       goToSection(section);
       
-      // 직접 스크롤 처리
+      // 직접 스크롤 처리 - window.scrollTo 사용
       const sectionElement = document.getElementById(`${section}-section`);
       if (sectionElement) {
-        sectionElement.scrollIntoView({ behavior: 'smooth' });
+        const yOffset = sectionElement.getBoundingClientRect().top + window.pageYOffset;
+        window.scrollTo({
+          top: yOffset,
+          behavior: 'smooth'
+        });
       }
     }
   };

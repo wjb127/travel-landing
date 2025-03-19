@@ -3,21 +3,18 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
-import { useStory } from '../context/StoryContext';
-import SectionNavigation from './SectionNavigation';
 
 interface ExperienceSectionProps {
   active: boolean;
+  onComplete: () => void;
 }
 
-export default function ExperienceSection({ active }: ExperienceSectionProps) {
+export default function ExperienceSection({ active, onComplete }: ExperienceSectionProps) {
   const [currentExperience, setCurrentExperience] = useState(0);
   const [ref, inView] = useInView({
     threshold: 0.3,
     triggerOnce: false,
   });
-  
-  const { goToNextSection, sectionCompleted, goToPreviousSection } = useStory();
 
   const experiences = [
     {
@@ -50,29 +47,7 @@ export default function ExperienceSection({ active }: ExperienceSectionProps) {
     if (currentExperience < experiences.length - 1) {
       setCurrentExperience(currentExperience + 1);
     } else {
-      sectionCompleted('experience');
-      goToNextSection();
-    }
-  };
-
-  const handleNextSection = () => {
-    sectionCompleted('experience');
-    goToNextSection();
-    
-    // 직접 스크롤 처리
-    const destinationSection = document.getElementById('destination-section');
-    if (destinationSection) {
-      destinationSection.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
-  const handlePreviousSection = () => {
-    goToPreviousSection();
-    
-    // 직접 스크롤 처리
-    const introSection = document.getElementById('intro-section');
-    if (introSection) {
-      introSection.scrollIntoView({ behavior: 'smooth' });
+      onComplete();
     }
   };
 
@@ -88,8 +63,6 @@ export default function ExperienceSection({ active }: ExperienceSectionProps) {
       }}
       transition={{ duration: 0.8 }}
     >
-      <SectionNavigation currentSection="experience" />
-      
       {/* 배경 요소 */}
       <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
         <div className="absolute top-[10%] left-[10%] w-32 h-32 bg-amber-500 rounded-full"></div>
@@ -120,14 +93,7 @@ export default function ExperienceSection({ active }: ExperienceSectionProps) {
           
           <div className="flex gap-4">
             <button 
-              onClick={handlePreviousSection}
-              className="px-6 py-3 border-2 border-amber-600 text-amber-600 rounded-lg hover:bg-amber-50 transition"
-            >
-              이전 경험
-            </button>
-            
-            <button 
-              onClick={handleNextSection}
+              onClick={handleNext}
               className="px-6 py-3 bg-amber-600 text-white rounded-lg hover:bg-amber-500 transition transform hover:scale-105 font-semibold"
             >
               {currentExperience < experiences.length - 1 ? "다음 경험" : "목적지 탐색"}
@@ -161,14 +127,12 @@ export default function ExperienceSection({ active }: ExperienceSectionProps) {
       </div>
       
       {/* 경험 선택 인디케이터 */}
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex gap-3">
+      <div className="mt-8 flex gap-2">
         {experiences.map((_, index) => (
           <button 
             key={index}
             onClick={() => setCurrentExperience(index)}
-            className={`w-3 h-3 rounded-full transition-all ${
-              index === currentExperience ? 'bg-amber-600 scale-125' : 'bg-amber-300'
-            }`}
+            className={`w-3 h-3 rounded-full ${index === currentExperience ? 'bg-amber-600' : 'bg-amber-300'}`}
             aria-label={`경험 ${index + 1}로 이동`}
           ></button>
         ))}

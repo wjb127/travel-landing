@@ -3,32 +3,28 @@
 import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
-import { useStory } from '../context/StoryContext';
-import SectionNavigation from './SectionNavigation';
 
 interface TravelIntroSectionProps {
   active: boolean;
+  onComplete: () => void;
 }
 
-export default function TravelIntroSection({ active }: TravelIntroSectionProps) {
+export default function TravelIntroSection({ active, onComplete }: TravelIntroSectionProps) {
   const [ref, inView] = useInView({
     threshold: 0.5,
     triggerOnce: false,
   });
-  
-  const { goToNextSection, sectionCompleted } = useStory();
 
   // 인트로 애니메이션이 완료되면 자동으로 다음 섹션으로 이동
   useEffect(() => {
     if (active && inView) {
       const timer = setTimeout(() => {
-        sectionCompleted('intro');
-        goToNextSection();
+        onComplete();
       }, 5000); // 5초 후 자동 진행
       
       return () => clearTimeout(timer);
     }
-  }, [active, inView, goToNextSection, sectionCompleted]);
+  }, [active, inView, onComplete]);
 
   return (
     <motion.section
@@ -40,8 +36,6 @@ export default function TravelIntroSection({ active }: TravelIntroSectionProps) 
       }}
       transition={{ duration: 1 }}
     >
-      <SectionNavigation currentSection="intro" />
-      
       {/* 배경 요소 - 구름과 비행기 */}
       <div className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none">
         <div className="absolute top-[10%] left-[5%] w-20 h-10 bg-white rounded-full"></div>
@@ -72,10 +66,7 @@ export default function TravelIntroSection({ active }: TravelIntroSectionProps) 
           transition={{ duration: 0.8, delay: 1.5 }}
         >
           <button 
-            onClick={() => {
-              sectionCompleted('intro');
-              goToNextSection();
-            }}
+            onClick={onComplete}
             className="px-8 py-4 bg-amber-500 rounded-full text-lg font-semibold hover:bg-amber-400 transition"
           >
             여행 시작하기

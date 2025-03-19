@@ -1,6 +1,4 @@
-'use client';
-
-import { ReactNode, useEffect } from 'react';
+import { ReactNode } from 'react';
 import { Press_Start_2P } from 'next/font/google';
 import './globals.css';
 
@@ -12,25 +10,13 @@ const pixelFont = Press_Start_2P({
 });
 
 export default function RootLayout({ children }: { children: ReactNode }) {
-  useEffect(() => {
-    // 클라이언트 측에서만 클래스 추가
-    document.body.classList.add('vsc-initialized');
-    
-    // 스크롤 잠금 제거
-    // document.body.style.overflow = 'hidden';
-    
-    // return () => {
-    //   document.body.style.overflow = '';
-    // };
-  }, []);
-
   return (
     <html lang="ko" className={pixelFont.variable}>
       <head>
-        <title>월드 트래블러</title>
-        <meta name="description" content="당신만의 특별한 여행을 디자인하세요" />
+        <title>횡스크롤 RPG 게임</title>
+        <meta name="description" content="마리오와 같은 횡스크롤 RPG 게임" />
       </head>
-      <body suppressHydrationWarning={true}>
+      <body>
         {children}
       </body>
     </html>
