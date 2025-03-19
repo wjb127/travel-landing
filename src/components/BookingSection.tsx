@@ -6,7 +6,7 @@ import { useInView } from 'react-intersection-observer';
 
 interface BookingSectionProps {
   active: boolean;
-  onComplete: () => void;
+  onComplete?: () => void;
 }
 
 export default function BookingSection({ active, onComplete }: BookingSectionProps) {
@@ -36,8 +36,14 @@ export default function BookingSection({ active, onComplete }: BookingSectionPro
     // 여기서 실제 폼 제출 로직을 구현할 수 있습니다
     setSubmitted(true);
     setTimeout(() => {
-      onComplete();
+      handleComplete();
     }, 3000);
+  };
+
+  const handleComplete = () => {
+    if (onComplete) {
+      onComplete();
+    }
   };
 
   return (
@@ -206,7 +212,7 @@ export default function BookingSection({ active, onComplete }: BookingSectionPro
               {formState.name}님, 여행 상담 요청이 접수되었습니다. 24시간 이내에 이메일({formState.email})로 연락드리겠습니다.
             </p>
             <button 
-              onClick={onComplete}
+              onClick={handleComplete}
               className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-500 transition"
             >
               홈으로 돌아가기

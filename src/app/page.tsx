@@ -80,6 +80,7 @@ export default function Home() {
         <div ref={sectionRefs[4]}>
           <BookingSection 
             active={currentSection === 4} 
+            onComplete={() => console.log('예약 완료!')}
           />
         </div>
         
